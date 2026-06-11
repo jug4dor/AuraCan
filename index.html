@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AURACAN – Tu mundo de mascotas</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#F5A623" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="AURACAN" />
+  <link rel="apple-touch-icon" href="icon-192.svg" />
+  <meta name="description" content="Tienda, foro, adopciones y comunidad para mascotas" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Raleway:wght@700;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ── RESET & BASE ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold:    #F5A623;
+      --orange:  #FF7043;
+      --mint:    #4CAF82;
+      --cream:   #FFFDF7;
+      --dark:    #2D2D2D;
+      --mid:     #6B6B6B;
+      --light:   #F7F3ED;
+      --card-bg: #FFFFFF;
+      --radius:  16px;
+      --shadow:  0 4px 24px rgba(45,45,45,0.10);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--cream);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+
+    /* ── PAWS TRAIL CANVAS ── */
+    #paw-canvas { position:fixed; top:0; left:0; pointer-events:none; z-index:9999; width:100%; height:100%; }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed; top: 0; left: 0; width: 100%;
+      background: rgba(255,253,247,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 2px solid var(--gold);
+      z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 5%;
+      height: 66px;
+    }
+    .logo {
+      font-family: 'Raleway', sans-serif;
+      font-size: 1.8rem; font-weight: 900;
+      color: var(--dark);
+      letter-spacing: -1px;
+    }
+    .logo span { color: var(--gold); }
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-links a {
+      text-decoration: none; color: var(--dark);
+      font-weight: 700; font-size: 0.88rem;
+      padding: 8px 14px; border-radius: 50px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .nav-links a:hover { background: var(--gold); color: #fff; }
+    .btn-plus {
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      color: #fff !important;
+      padding: 8px 18px !important;
+      border-radius: 50px !important;
+      font-weight: 800 !important;
+    }
+    .btn-plus:hover { opacity: 0.88; background: linear-gradient(135deg, var(--gold), var(--orange)) !important; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .hamburger span { width: 24px; height: 2px; background: var(--dark); border-radius: 2px; transition: 0.3s; }
+    .mobile-menu {
+      display: none; flex-direction: column; gap: 6px;
+      position: fixed; top: 66px; left: 0; width: 100%;
+      background: var(--cream); border-bottom: 2px solid var(--gold);
+      padding: 16px 5%; z-index: 999;
+    }
+    .mobile-menu a {
+      text-decoration: none; color: var(--dark); font-weight: 700;
+      padding: 10px 14px; border-radius: 10px; font-size: 1rem;
+      transition: background 0.2s;
+    }
+    .mobile-menu a:hover { background: var(--light); }
+    .mobile-menu.open { display: flex; }
+
+    /* ── HERO ── */
+    #hero {
+      margin-top: 66px;
+      min-height: calc(100vh - 66px);
+      background: linear-gradient(145deg, #FFF8EE 0%, #FFE5D3 60%, #E8F5EE 100%);
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      padding: 60px 5%;
+      position: relative; overflow: hidden;
+    }
+    .hero-blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(60px); opacity: 0.35; pointer-events: none;
+    }
+    .blob1 { width: 380px; height: 380px; background: var(--gold); top: -80px; right: -80px; }
+    .blob2 { width: 280px; height: 280px; background: var(--mint); bottom: -60px; left: -40px; }
+    .hero-content { position: relative; z-index: 1; max-width: 680px; }
+    .hero-badge {
+      display: inline-block;
+      background: var(--gold); color: #fff;
+      font-size: 0.78rem; font-weight: 800; letter-spacing: 2px;
+      padding: 6px 16px; border-radius: 50px; margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+    .hero-title {
+      font-family: 'Raleway', sans-serif;
+      font-size: clamp(2.8rem, 7vw, 5rem);
+      font-weight: 900; line-height: 1.05;
+      color: var(--dark);
+      margin-bottom: 18px;
+    }
+    .hero-title span { color: var(--gold); }
+    .hero-sub {
+      font-size: 1.15rem; color: var(--mid);
+      line-height: 1.7; margin-bottom: 36px;
+    }
+    .hero-ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      color: #fff; font-weight: 800; font-size: 1rem;
+      padding: 14px 30px; border-radius: 50px; border: none;
+      cursor: pointer; text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 6px 20px rgba(245,166,35,0.4);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(245,166,35,0.45); }
+    .btn-secondary {
+      background: transparent; color: var(--dark);
+      border: 2px solid var(--dark); font-weight: 800;
+      font-size: 1rem; padding: 13px 28px; border-radius: 50px;
+      cursor: pointer; text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-secondary:hover { background: var(--dark); color: #fff; }
+    .hero-stats {
+      display: flex; gap: 32px; justify-content: center;
+      margin-top: 48px; flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-num { font-family: 'Raleway',sans-serif; font-size: 2rem; font-weight: 900; color: var(--gold); }
+    .stat-lbl { font-size: 0.82rem; color: var(--mid); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+    .paw-deco { font-size: 3.5rem; margin-bottom: 12px; display: block; animation: bounce 2.5s ease-in-out infinite; }
+    @keyframes bounce { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
+
+    /* ── SECTION BASE ── */
+    section { padding: 80px 5%; }
+    .section-tag {
+      display: inline-block; font-size: 0.75rem; font-weight: 800;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 50px; margin-bottom: 12px;
+    }
+    .tag-gold { background: #FFF0CC; color: var(--gold); }
+    .tag-orange { background: #FFE8E1; color: var(--orange); }
+    .tag-mint { background: #E1F5EC; color: var(--mint); }
+    .tag-dark { background: var(--dark); color: #fff; }
+    .section-title {
+      font-family: 'Raleway', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 900; margin-bottom: 10px; line-height: 1.15;
+    }
+    .section-sub { font-size: 1rem; color: var(--mid); max-width: 560px; line-height: 1.7; }
+    .paw-divider {
+      text-align: center; font-size: 1.3rem;
+      letter-spacing: 14px; margin: 8px 0 40px;
+      opacity: 0.35;
+    }
+
+    /* ── TIENDA ── */
+    #tienda { background: var(--light); }
+    .tienda-header { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px; margin-bottom: 40px; }
+    .category-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 30px; }
+    .tab {
+      padding: 8px 18px; border-radius: 50px; font-weight: 700; font-size: 0.88rem;
+      cursor: pointer; border: 2px solid transparent;
+      transition: all 0.2s;
+      background: #fff; color: var(--mid);
+    }
+    .tab.active, .tab:hover { background: var(--gold); color: #fff; border-color: var(--gold); }
+    .products-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 22px;
+    }
+    .product-card {
+      background: var(--card-bg); border-radius: var(--radius);
+      box-shadow: var(--shadow); overflow: hidden;
+      transition: transform 0.22s, box-shadow 0.22s;
+      position: relative;
+    }
+    .product-card:hover { transform: translateY(-5px); box-shadow: 0 12px 36px rgba(45,45,45,0.14); }
+    .product-img {
+      width: 100%; height: 160px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 4rem;
+    }
+    .bg-peach { background: #FFF0E6; }
+    .bg-mint  { background: #E8F7F0; }
+    .bg-blue  { background: #E8F0FF; }
+    .bg-lav   { background: #F2EEFF; }
+    .product-badge {
+      position: absolute; top: 12px; right: 12px;
+      background: var(--orange); color: #fff;
+      font-size: 0.72rem; font-weight: 800;
+      padding: 4px 10px; border-radius: 50px;
+    }
+    .product-info { padding: 16px; }
+    .product-name { font-weight: 800; font-size: 0.95rem; margin-bottom: 4px; }
+    .product-desc { font-size: 0.82rem; color: var(--mid); margin-bottom: 12px; line-height: 1.5; }
+    .product-footer { display: flex; justify-content: space-between; align-items: center; }
+    .product-price { font-family: 'Raleway',sans-serif; font-weight: 900; font-size: 1.15rem; color: var(--gold); }
+    .btn-cart {
+      background: var(--dark); color: #fff;
+      border: none; padding: 8px 14px; border-radius: 10px;
+      font-weight: 700; font-size: 0.82rem; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-cart:hover { background: var(--gold); }
+
+    /* ── BÚSQUEDA ── */
+    #busqueda { background: var(--cream); }
+    .search-box {
+      background: var(--card-bg); border-radius: 20px;
+      box-shadow: var(--shadow); padding: 36px;
+      max-width: 700px;
+    }
+    .search-row {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;
+    }
+    .search-input {
+      flex: 1; min-width: 200px;
+      border: 2px solid #E8E2DA; border-radius: 12px;
+      padding: 12px 16px; font-family: 'Nunito',sans-serif;
+      font-size: 0.95rem; outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--gold); }
+    .search-select {
+      border: 2px solid #E8E2DA; border-radius: 12px;
+      padding: 12px 16px; font-family: 'Nunito',sans-serif;
+      font-size: 0.95rem; background: #fff; outline: none; cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .search-select:focus { border-color: var(--gold); }
+    .btn-search {
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      color: #fff; border: none; padding: 12px 24px; border-radius: 12px;
+      font-weight: 800; font-size: 1rem; cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .btn-search:hover { transform: scale(1.04); }
+    .filter-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      padding: 6px 14px; border-radius: 50px; font-size: 0.82rem;
+      font-weight: 700; cursor: pointer;
+      border: 2px solid #E8E2DA; background: #fff; color: var(--mid);
+      transition: all 0.2s;
+    }
+    .chip.active, .chip:hover { border-color: var(--mint); background: var(--mint); color: #fff; }
+    .pet-results { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 18px; margin-top: 36px; }
+    .pet-card {
+      background: var(--card-bg); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 20px; text-align: center;
+      transition: transform 0.22s;
+    }
+    .pet-card:hover { transform: translateY(-4px); }
+    .pet-avatar { font-size: 3.5rem; margin-bottom: 10px; }
+    .pet-name { font-weight: 800; font-size: 1rem; margin-bottom: 4px; }
+    .pet-meta { font-size: 0.8rem; color: var(--mid); margin-bottom: 12px; }
+    .pet-tag {
+      display: inline-block; font-size: 0.75rem; font-weight: 700;
+      padding: 4px 12px; border-radius: 50px;
+    }
+    .tag-adoptar { background: #E1F5EC; color: var(--mint); }
+    .tag-perdido { background: #FFE8E1; color: var(--orange); }
+    .tag-encontrado { background: #FFF0CC; color: var(--gold); }
+    .btn-ver {
+      display: block; width: 100%; margin-top: 10px;
+      background: var(--light); color: var(--dark);
+      border: none; padding: 8px; border-radius: 10px;
+      font-weight: 700; font-size: 0.85rem; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-ver:hover { background: var(--gold); color: #fff; }
+
+    /* ── FORO ── */
+    #foro { background: var(--light); }
+    .foro-layout { display: grid; grid-template-columns: 1fr 320px; gap: 28px; }
+    .forum-list { display: flex; flex-direction: column; gap: 14px; }
+    .forum-post {
+      background: var(--card-bg); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 20px;
+      display: flex; gap: 14px; align-items: flex-start;
+      transition: transform 0.2s;
+    }
+    .forum-post:hover { transform: translateX(4px); }
+    .post-avatar {
+      width: 46px; height: 46px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .av-gold { background: #FFF0CC; }
+    .av-mint { background: #E1F5EC; }
+    .av-orange { background: #FFE8E1; }
+    .av-blue { background: #E8F0FF; }
+    .post-body { flex: 1; }
+    .post-title { font-weight: 800; font-size: 0.97rem; margin-bottom: 4px; cursor: pointer; }
+    .post-title:hover { color: var(--gold); }
+    .post-preview { font-size: 0.83rem; color: var(--mid); margin-bottom: 8px; line-height: 1.5; }
+    .post-meta { display: flex; gap: 12px; font-size: 0.78rem; color: var(--mid); flex-wrap: wrap; }
+    .post-meta span { display: flex; align-items: center; gap: 4px; }
+    .post-pin {
+      font-size: 0.72rem; font-weight: 800; padding: 3px 10px;
+      border-radius: 50px; background: var(--gold); color: #fff;
+      margin-left: auto; flex-shrink: 0;
+    }
+    .forum-sidebar { display: flex; flex-direction: column; gap: 18px; }
+    .sidebar-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+    .sidebar-title { font-weight: 800; font-size: 0.9rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .trend-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid var(--light); font-size: 0.85rem;
+    }
+    .trend-item:last-child { border-bottom: none; }
+    .trend-count { font-weight: 700; color: var(--gold); font-size: 0.8rem; }
+    .btn-new-post {
+      display: block; width: 100%; text-align: center;
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      color: #fff; border: none; padding: 13px;
+      border-radius: 12px; font-weight: 800; font-size: 0.95rem;
+      cursor: pointer; transition: transform 0.2s; text-decoration: none;
+    }
+    .btn-new-post:hover { transform: scale(1.03); }
+
+    /* ── MEMBRESÍA ── */
+    #membresia {
+      background: linear-gradient(160deg, #1A1A2E 0%, #2D2D2D 100%);
+      color: #fff;
+    }
+    #membresia .section-title { color: #fff; }
+    #membresia .section-sub { color: rgba(255,255,255,0.6); }
+    .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-top: 40px; }
+    .plan-card {
+      background: rgba(255,255,255,0.06);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 22px; padding: 32px; text-align: center;
+      transition: transform 0.22s, border-color 0.22s;
+      position: relative; overflow: hidden;
+    }
+    .plan-card:hover { transform: translateY(-6px); }
+    .plan-card.featured {
+      background: rgba(245,166,35,0.12);
+      border-color: var(--gold);
+    }
+    .plan-card.featured::before {
+      content: '⭐ MÁS POPULAR';
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      background: var(--gold); color: #fff;
+      font-size: 0.7rem; font-weight: 900; letter-spacing: 1px;
+      padding: 5px 20px; border-radius: 0 0 12px 12px;
+    }
+    .plan-icon { font-size: 2.8rem; margin-bottom: 12px; }
+    .plan-name { font-family: 'Raleway',sans-serif; font-size: 1.3rem; font-weight: 900; margin-bottom: 6px; }
+    .plan-desc { font-size: 0.85rem; color: rgba(255,255,255,0.55); margin-bottom: 20px; }
+    .plan-price { font-family: 'Raleway',sans-serif; font-size: 2.4rem; font-weight: 900; color: var(--gold); }
+    .plan-price sup { font-size: 1rem; vertical-align: super; }
+    .plan-price sub { font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+    .plan-features { list-style: none; margin: 22px 0; text-align: left; display: flex; flex-direction: column; gap: 10px; }
+    .plan-features li { font-size: 0.88rem; display: flex; gap: 10px; align-items: flex-start; }
+    .plan-features li::before { content: '✓'; color: var(--mint); font-weight: 900; flex-shrink: 0; }
+    .plan-features li.no::before { content: '✕'; color: rgba(255,255,255,0.25); }
+    .plan-features li.no { color: rgba(255,255,255,0.3); }
+    .btn-plan {
+      display: block; width: 100%; padding: 13px;
+      border-radius: 50px; font-weight: 800; font-size: 0.95rem;
+      cursor: pointer; border: 2px solid rgba(255,255,255,0.2);
+      color: #fff; background: transparent;
+      transition: all 0.2s; text-decoration: none;
+    }
+    .btn-plan:hover { border-color: var(--gold); background: var(--gold); }
+    .btn-plan.gold { background: var(--gold); border-color: var(--gold); }
+    .btn-plan.gold:hover { background: var(--orange); border-color: var(--orange); }
+
+    /* ── NEWSLETTER ── */
+    #newsletter {
+      background: var(--cream);
+      text-align: center;
+      padding: 70px 5%;
+    }
+    .newsletter-box {
+      max-width: 540px; margin: 0 auto;
+    }
+    .newsletter-input-row {
+      display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap;
+    }
+    .newsletter-input {
+      flex: 1; min-width: 200px;
+      border: 2px solid #E8E2DA; border-radius: 50px;
+      padding: 13px 20px; font-family: 'Nunito',sans-serif; font-size: 0.95rem;
+      outline: none; transition: border-color 0.2s;
+    }
+    .newsletter-input:focus { border-color: var(--gold); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--dark); color: rgba(255,255,255,0.7);
+      padding: 50px 5% 28px;
+    }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 36px; }
+    .footer-brand .logo { color: #fff; }
+    .footer-brand .logo span { color: var(--gold); }
+    .footer-brand p { font-size: 0.88rem; margin-top: 12px; line-height: 1.7; }
+    .footer-col h4 { color: #fff; font-size: 0.9rem; font-weight: 800; margin-bottom: 14px; }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .footer-col ul li a { color: rgba(255,255,255,0.55); font-size: 0.87rem; text-decoration: none; transition: color 0.2s; }
+    .footer-col ul li a:hover { color: var(--gold); }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 0.82rem; }
+    .social-icons { display: flex; gap: 10px; }
+    .social-btn {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(255,255,255,0.08); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none; font-size: 1rem;
+      transition: background 0.2s;
+    }
+    .social-btn:hover { background: var(--gold); }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55); z-index: 2000;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--card-bg); border-radius: 22px;
+      padding: 36px; max-width: 420px; width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2); position: relative;
+      animation: fadeInUp 0.3s ease;
+    }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+    .modal-close {
+      position: absolute; top: 14px; right: 16px;
+      background: none; border: none; font-size: 1.4rem;
+      cursor: pointer; color: var(--mid);
+    }
+    .modal h3 { font-family:'Raleway',sans-serif; font-size:1.5rem; font-weight:900; margin-bottom:6px; }
+    .modal p { color:var(--mid); font-size:0.9rem; margin-bottom:22px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display:block; font-weight:700; font-size:0.88rem; margin-bottom:5px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width:100%; border:2px solid #E8E2DA; border-radius:12px;
+      padding:11px 14px; font-family:'Nunito',sans-serif; font-size:0.92rem; outline:none;
+      transition:border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--gold); }
+    .btn-modal-submit {
+      width:100%; padding:13px; background:linear-gradient(135deg,var(--gold),var(--orange));
+      color:#fff; border:none; border-radius:12px; font-weight:800;
+      font-size:1rem; cursor:pointer; transition:transform 0.2s;
+    }
+    .btn-modal-submit:hover { transform:scale(1.02); }
+
+    /* ── TOAST ── */
+    #toast {
+      position:fixed; bottom:28px; right:28px; z-index:3000;
+      background:var(--dark); color:#fff;
+      padding:14px 22px; border-radius:14px;
+      font-weight:700; font-size:0.9rem;
+      box-shadow:0 8px 28px rgba(0,0,0,0.2);
+      transform:translateX(120%); transition:transform 0.35s ease;
+      display:flex; align-items:center; gap:10px;
+    }
+    #toast.show { transform:translateX(0); }
+
+    /* ── SCROLL TO TOP ── */
+    #scroll-top {
+      position:fixed; bottom:28px; left:28px; z-index:1000;
+      width:44px; height:44px; border-radius:50%;
+      background:var(--gold); color:#fff; border:none;
+      font-size:1.2rem; cursor:pointer; display:none;
+      align-items:center; justify-content:center;
+      box-shadow:0 4px 16px rgba(245,166,35,0.4);
+      transition:transform 0.2s;
+    }
+    #scroll-top:hover { transform:scale(1.1); }
+    #scroll-top.visible { display:flex; }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:900px) {
+      .foro-layout { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media(max-width:640px) {
+      .nav-links { display:none; }
+      .hamburger { display:flex; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .plans-grid { grid-template-columns: 1fr; }
+      .hero-stats { gap:20px; }
+    }
+
+    /* ── PWA INSTALL BANNER ── */
+    #install-banner {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(135deg, #2D2D2D, #1a1a2e);
+      color: #fff; padding: 16px 20px;
+      z-index: 4000; align-items: center; gap: 14px;
+      border-top: 3px solid var(--gold);
+      animation: slideUp 0.4s ease;
+    }
+    #install-banner.show { display: flex; }
+    @keyframes slideUp { from{transform:translateY(100%)}to{transform:translateY(0)} }
+    #install-banner .banner-icon { font-size: 2rem; flex-shrink: 0; }
+    #install-banner .banner-text { flex: 1; }
+    #install-banner .banner-text strong { display: block; font-size: 0.95rem; margin-bottom: 2px; }
+    #install-banner .banner-text span { font-size: 0.8rem; opacity: 0.7; }
+    #install-banner .btn-install {
+      background: var(--gold); color: #fff; border: none;
+      padding: 10px 18px; border-radius: 10px; font-weight: 800;
+      font-size: 0.88rem; cursor: pointer; white-space: nowrap;
+      transition: background 0.2s;
+    }
+    #install-banner .btn-install:hover { background: var(--orange); }
+    #install-banner .btn-dismiss {
+      background: none; border: none; color: rgba(255,255,255,0.5);
+      font-size: 1.2rem; cursor: pointer; padding: 4px 8px;
+    }
+    /* ── OFFLINE BADGE ── */
+    #offline-badge {
+      display: none; position: fixed; top: 76px; left: 50%; transform: translateX(-50%);
+      background: #e53935; color: #fff; padding: 8px 18px; border-radius: 50px;
+      font-size: 0.82rem; font-weight: 700; z-index: 5000;
+    }
+    #offline-badge.show { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- PAW TRAIL -->
+<canvas id="paw-canvas"></canvas>
+
+<!-- TOAST -->
+<div id="toast">🐾 <span id="toast-msg">¡Acción realizada!</span></div>
+
+<!-- SCROLL TOP -->
+<button id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">▲</button>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo">AURA<span>CAN</span> 🐾</div>
+  <div class="nav-links">
+    <a href="#tienda">Tienda</a>
+    <a href="#busqueda">Búsqueda</a>
+    <a href="#foro">Foro</a>
+    <a href="#membresia">Membresía</a>
+    <a href="#" onclick="openModal('login')" class="btn-plus">✦ Plus</a>
+  </div>
+  <div class="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#tienda" onclick="closeMenu()">🛍️ Tienda</a>
+  <a href="#busqueda" onclick="closeMenu()">🔍 Búsqueda</a>
+  <a href="#foro" onclick="closeMenu()">💬 Foro</a>
+  <a href="#membresia" onclick="closeMenu()">⭐ Membresía</a>
+  <a href="#" onclick="openModal('login');closeMenu()">🔑 Iniciar sesión</a>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-blob blob1"></div>
+  <div class="hero-blob blob2"></div>
+  <div class="hero-content">
+    <span class="paw-deco">🐾</span>
+    <div class="hero-badge">La comunidad de mascotas #1</div>
+    <h1 class="hero-title">Todo para tu<br><span>mascota favorita</span></h1>
+    <p class="hero-sub">Tienda, foro, adopciones y comunidad en un solo lugar.<br>Porque ellos merecen lo mejor.</p>
+    <div class="hero-ctas">
+      <a href="#tienda" class="btn-primary">🛍️ Explorar tienda</a>
+      <a href="#busqueda" class="btn-secondary">🔍 Buscar mascotas</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">12k+</div>
+        <div class="stat-lbl">Usuarios activos</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">3.8k</div>
+        <div class="stat-lbl">Mascotas adoptadas</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">580+</div>
+        <div class="stat-lbl">Productos disponibles</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TIENDA -->
+<section id="tienda">
+  <div class="tienda-header">
+    <div>
+      <div class="section-tag tag-gold">🛍️ Tienda</div>
+      <h2 class="section-title">Lo mejor para<br>tu compañero</h2>
+      <p class="section-sub">Productos seleccionados con amor para perros, gatos y más.</p>
+    </div>
+    <a href="#" class="btn-primary" onclick="showToast('🛍️ Ver toda la tienda próximamente')">Ver todo →</a>
+  </div>
+  <div class="paw-divider">🐾 🐾 🐾</div>
+  <div class="category-tabs">
+    <div class="tab active" onclick="filterTab(this,'todos')">🐾 Todos</div>
+    <div class="tab" onclick="filterTab(this,'alimento')">🍖 Alimento</div>
+    <div class="tab" onclick="filterTab(this,'juguetes')">🎾 Juguetes</div>
+    <div class="tab" onclick="filterTab(this,'accesorios')">🎀 Accesorios</div>
+    <div class="tab" onclick="filterTab(this,'salud')">💊 Salud</div>
+    <div class="tab" onclick="filterTab(this,'ropa')">👕 Ropa</div>
+  </div>
+  <div class="products-grid" id="productsGrid">
+    <div class="product-card" data-cat="alimento">
+      <div class="product-img bg-peach">🍖</div>
+      <div class="product-badge">Nuevo</div>
+      <div class="product-info">
+        <div class="product-name">Croquetas Premium Plus</div>
+        <div class="product-desc">Fórmula avanzada con proteína real. 5 kg.</div>
+        <div class="product-footer">
+          <div class="product-price">$38.900</div>
+          <button class="btn-cart" onclick="addCart('Croquetas Premium Plus')">+ Carrito</button>
+        </div>
+      </div>
+    </div>
+    <div class="product-card" data-cat="juguetes">
+      <div class="product-img bg-mint">🎾</div>
+      <div class="product-info">
+        <div class="product-name">Kit Juguetes Interactivos</div>
+        <div class="product-desc">Set de 6 juguetes estimulantes. Colores variados.</div>
+        <div class="product-footer">
+          <div class="product-price">$22.500</div>
+          <button class="btn-cart" onclick="addCart('Kit Juguetes Interactivos')">+ Carrito</button>
+        </div>
+      </div>
+    </div>
+    <div class="product-card" data-cat="accesorios">
+      <div class="product-img bg-blue">🎀</div>
+      <div class="product-badge">-20%</div>
+      <div class="product-info">
+        <div class="product-name">Collar GPS Smart</div>
+        <div class="product-desc">Localiza a tu mascota en tiempo real. Resistente al agua.</div>
+        <div class="product-footer">
+          <div class="product-price">$67.000</div>
+          <button class="btn-cart" onclick="addCart('Collar GPS Smart')">+ Carrito</button>
+        </div>
+      </div>
+    </div>
+    <div class="product-card" data-cat="salud">
+      <div class="product-img bg-lav">💊</div>
+      <div class="product-info">
+        <div class="product-name">Vitaminas Auracan Daily</div>
+        <div class="product-desc">Suplemento multinutriente. 60 tabletas masticables.</div>
+        <div class="product-footer">
+          <div class="product-price">$31.200</div>
+          <button class="btn-cart" onclick="addCart('Vitaminas Auracan Daily')">+ Carrito</button>
+        </div>
+      </div>
+    </div>
+    <div class="product-card" data-cat="ropa">
+      <div class="product-img bg-peach">👕</div>
+      <div class="product-info">
+        <div class="product-name">Abrigo Otoño-Invierno</div>
+        <div class="product-desc">Tallas XS a XL. Tejido suave y aislante. 6 colores.</div>
+        <div class="product-footer">
+          <div class="product-price">$28.800</div>
+          <button class="btn-cart" onclick="addCart('Abrigo Otoño-Invierno')">+ Carrito</button>
+        </div>
+      </div>
+    </div>
+    <div class="product-card" data-cat="accesorios">
+      <div class="product-img bg-mint">🛏️</div>
+      <div class="product-badge">Plus</div>
+      <div class="product-info">
+        <div class="product-name">Cama Ortopédica Luxury</div>
+        <div class="product-desc">Espuma de memoria para articulaciones. Lavable.</div>
+        <div class="product-footer">
+          <div class="product-price">$89.500</div>
+          <button class="btn-cart" onclick="addCart('Cama Ortopédica Luxury')">+ Carrito</button>
+        </div>
+      </div>
+    </div>
+    <div class="product-card" data-cat="alimento">
+      <div class="product-img bg-blue">🐟</div>
+      <div class="product-info">
+        <div class="product-name">Snacks de Salmón Natural</div>
+        <div class="product-desc">100% salmón deshidratado sin conservantes. 200 g.</div>
+        <div class="product-footer">
+          <div class="product-price">$18.600</div>
+          <button class="btn-cart" onclick="addCart('Snacks de Salmón Natural')">+ Carrito</button>
+        </div>
+      </div>
+    </div>
+    <div class="product-card" data-cat="juguetes">
+      <div class="product-img bg-lav">🧩</div>
+      <div class="product-badge">Nuevo</div>
+      <div class="product-info">
+        <div class="product-name">Puzzle Inteligencia Felina</div>
+        <div class="product-desc">3 niveles de dificultad. Estimula mente y olfato.</div>
+        <div class="product-footer">
+          <div class="product-price">$34.000</div>
+          <button class="btn-cart" onclick="addCart('Puzzle Inteligencia Felina')">+ Carrito</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BÚSQUEDA -->
+<section id="busqueda">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;flex-wrap:wrap">
+    <div>
+      <div class="section-tag tag-mint">🔍 Búsqueda</div>
+      <h2 class="section-title">Encuentra, adopta<br>o reporta mascotas</h2>
+      <p class="section-sub">Conectamos familias con mascotas que necesitan un hogar. También puedes reportar mascotas perdidas o encontradas.</p>
+      <br>
+      <div class="search-box">
+        <div class="search-row">
+          <input class="search-input" type="text" id="searchInput" placeholder="🔍 Buscar por nombre, raza o zona..." />
+          <button class="btn-search" onclick="searchPets()">Buscar</button>
+        </div>
+        <div class="search-row">
+          <select class="search-select" id="speciesFilter">
+            <option value="">🐾 Especie</option>
+            <option value="perro">🐶 Perro</option>
+            <option value="gato">🐱 Gato</option>
+            <option value="conejo">🐰 Conejo</option>
+            <option value="ave">🦜 Ave</option>
+            <option value="otro">🐾 Otro</option>
+          </select>
+          <select class="search-select" id="cityFilter">
+            <option value="">📍 Ciudad</option>
+            <option>Bogotá</option>
+            <option>Medellín</option>
+            <option>Cali</option>
+            <option>Barranquilla</option>
+            <option>Bucaramanga</option>
+          </select>
+        </div>
+        <div class="filter-chips">
+          <div class="chip active" onclick="toggleChip(this,'adoptar')">💚 En adopción</div>
+          <div class="chip" onclick="toggleChip(this,'perdido')">🔴 Perdidos</div>
+          <div class="chip" onclick="toggleChip(this,'encontrado')">🟡 Encontrados</div>
+        </div>
+      </div>
+      <br>
+      <button class="btn-primary" onclick="openModal('reporte')">➕ Reportar mascota</button>
+    </div>
+    <div>
+      <div class="pet-results" id="petResults">
+        <div class="pet-card">
+          <div class="pet-avatar">🐶</div>
+          <div class="pet-name">Luna</div>
+          <div class="pet-meta">Golden Retriever · 2 años · Bogotá</div>
+          <div class="pet-tag tag-adoptar">En adopción</div>
+          <button class="btn-ver" onclick="showToast('🐶 Perfil de Luna próximamente')">Ver perfil →</button>
+        </div>
+        <div class="pet-card">
+          <div class="pet-avatar">🐱</div>
+          <div class="pet-name">Michi</div>
+          <div class="pet-meta">Gato persa · 1 año · Medellín</div>
+          <div class="pet-tag tag-adoptar">En adopción</div>
+          <button class="btn-ver" onclick="showToast('🐱 Perfil de Michi próximamente')">Ver perfil →</button>
+        </div>
+        <div class="pet-card">
+          <div class="pet-avatar">🐶</div>
+          <div class="pet-name">Rex</div>
+          <div class="pet-meta">Pastor alemán · Cali</div>
+          <div class="pet-tag tag-perdido">Perdido</div>
+          <button class="btn-ver" onclick="showToast('🐶 Perfil de Rex próximamente')">Ver perfil →</button>
+        </div>
+        <div class="pet-card">
+          <div class="pet-avatar">🐰</div>
+          <div class="pet-name">Bunny</div>
+          <div class="pet-meta">Conejo enano · Bogotá</div>
+          <div class="pet-tag tag-encontrado">Encontrado</div>
+          <button class="btn-ver" onclick="showToast('🐰 Perfil de Bunny próximamente')">Ver perfil →</button>
+        </div>
+        <div class="pet-card">
+          <div class="pet-avatar">🐱</div>
+          <div class="pet-name">Simba</div>
+          <div class="pet-meta">Siamés · 3 años · Cali</div>
+          <div class="pet-tag tag-adoptar">En adopción</div>
+          <button class="btn-ver" onclick="showToast('🐱 Perfil de Simba próximamente')">Ver perfil →</button>
+        </div>
+        <div class="pet-card">
+          <div class="pet-avatar">🦜</div>
+          <div class="pet-name">Pico</div>
+          <div class="pet-meta">Loro verde · Medellín</div>
+          <div class="pet-tag tag-perdido">Perdido</div>
+          <button class="btn-ver" onclick="showToast('🦜 Perfil de Pico próximamente')">Ver perfil →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FORO -->
+<section id="foro">
+  <div class="section-tag tag-orange">💬 Foro</div>
+  <h2 class="section-title">Comunidad AURACAN</h2>
+  <p class="section-sub">Comparte experiencias, pide consejos y conecta con dueños de mascotas.</p>
+  <div class="paw-divider">🐾 🐾 🐾</div>
+  <div class="foro-layout">
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div class="category-tabs" style="margin:0">
+          <div class="tab active" onclick="tabActive(this)">📌 Todos</div>
+          <div class="tab" onclick="tabActive(this)">🐶 Perros</div>
+          <div class="tab" onclick="tabActive(this)">🐱 Gatos</div>
+          <div class="tab" onclick="tabActive(this)">❓ Ayuda</div>
+        </div>
+        <button class="btn-new-post" onclick="openModal('post')" style="width:auto;padding:10px 22px">✏️ Nuevo post</button>
+      </div>
+      <div class="forum-list">
+        <div class="forum-post">
+          <div class="post-avatar av-gold">👩</div>
+          <div class="post-body">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="post-title">¿Cuál es la mejor alimentación para un Golden Retriever adulto?</div>
+              <div class="post-pin">📌 Fijado</div>
+            </div>
+            <div class="post-preview">Tengo a Bella, 4 años, y quiero mejorar su dieta. He leído sobre BARF y croquetas premium...</div>
+            <div class="post-meta">
+              <span>👩 María G.</span>
+              <span>💬 34 respuestas</span>
+              <span>👁️ 892 vistas</span>
+              <span>🕐 hace 2h</span>
+            </div>
+          </div>
+        </div>
+        <div class="forum-post">
+          <div class="post-avatar av-mint">🧑</div>
+          <div class="post-body">
+            <div class="post-title">Mi gato no come hace 2 días, ¿qué hago?</div>
+            <div class="post-preview">Simba dejó de comer desde el martes, bebe agua normal pero rechaza toda la comida...</div>
+            <div class="post-meta">
+              <span>🧑 Carlos V.</span>
+              <span>💬 21 respuestas</span>
+              <span>👁️ 445 vistas</span>
+              <span>🕐 hace 5h</span>
+            </div>
+          </div>
+        </div>
+        <div class="forum-post">
+          <div class="post-avatar av-orange">👧</div>
+          <div class="post-body">
+            <div class="post-title">Tips para socializar a un cachorro de 3 meses 🐶</div>
+            <div class="post-preview">Adoptamos a Manchas la semana pasada y es muy tímido con extraños. ¿Algún consejo?</div>
+            <div class="post-meta">
+              <span>👧 Laura P.</span>
+              <span>💬 58 respuestas</span>
+              <span>👁️ 1.2k vistas</span>
+              <span>🕐 hace 1d</span>
+            </div>
+          </div>
+        </div>
+        <div class="forum-post">
+          <div class="post-avatar av-blue">🧔</div>
+          <div class="post-body">
+            <div class="post-title">Recomendaciones de veterinarios en Bogotá zona norte</div>
+            <div class="post-preview">Busco vet de confianza para mi bulldog. Si tienen experiencias compartánlas...</div>
+            <div class="post-meta">
+              <span>🧔 Andrés M.</span>
+              <span>💬 17 respuestas</span>
+              <span>👁️ 310 vistas</span>
+              <span>🕐 hace 3d</span>
+            </div>
+          </div>
+        </div>
+        <div class="forum-post">
+          <div class="post-avatar av-gold">👩‍🦱</div>
+          <div class="post-body">
+            <div class="post-title">Foto de mascotas 🐾 Comparte la tuya!</div>
+            <div class="post-preview">Hilo para compartir fotos de nuestros peludos. ¡Mientras más adorables mejor!</div>
+            <div class="post-meta">
+              <span>👩‍🦱 Patricia R.</span>
+              <span>💬 142 respuestas</span>
+              <span>👁️ 4.5k vistas</span>
+              <span>🕐 hace 6d</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="forum-sidebar">
+      <button class="btn-new-post" onclick="openModal('post')">✏️ Crear nueva discusión</button>
+      <div class="sidebar-card">
+        <div class="sidebar-title">🔥 Temas populares</div>
+        <div class="trend-item"><span>Dieta BARF</span><span class="trend-count">128 posts</span></div>
+        <div class="trend-item"><span>Adopción responsable</span><span class="trend-count">94 posts</span></div>
+        <div class="trend-item"><span>Cachorro primer mes</span><span class="trend-count">87 posts</span></div>
+        <div class="trend-item"><span>Vacunas 2025</span><span class="trend-count">72 posts</span></div>
+        <div class="trend-item"><span>Razas hipoalergénicas</span><span class="trend-count">61 posts</span></div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">📊 Estadísticas del foro</div>
+        <div class="trend-item"><span>Miembros</span><span class="trend-count">12,840</span></div>
+        <div class="trend-item"><span>Discusiones</span><span class="trend-count">3,291</span></div>
+        <div class="trend-item"><span>Respuestas hoy</span><span class="trend-count">248</span></div>
+        <div class="trend-item"><span>En línea ahora</span><span class="trend-count">134</span></div>
+      </div>
+      <div class="sidebar-card" style="background:linear-gradient(135deg,#FFF0CC,#FFE8E1);border:none">
+        <div class="sidebar-title">⭐ Únete Plus</div>
+        <p style="font-size:0.85rem;color:var(--mid);margin-bottom:14px">Accede a canales exclusivos, asesoría veterinaria y más.</p>
+        <a href="#membresia" class="btn-new-post">Ver planes →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MEMBRESÍA -->
+<section id="membresia">
+  <div class="section-tag tag-dark">⭐ Membresía Plus</div>
+  <h2 class="section-title">Más para ti<br>y tu mascota</h2>
+  <p class="section-sub">Elige el plan que mejor se adapte a tu estilo de vida con tu compañero peludo.</p>
+  <div class="plans-grid">
+    <div class="plan-card">
+      <div class="plan-icon">🐾</div>
+      <div class="plan-name">Gratis</div>
+      <div class="plan-desc">Para comenzar en AURACAN</div>
+      <div class="plan-price"><sup>$</sup>0<sub>/mes</sub></div>
+      <ul class="plan-features">
+        <li>Acceso a la tienda</li>
+        <li>Foro comunitario (lectura)</li>
+        <li>Búsqueda básica de mascotas</li>
+        <li class="no">Sin anuncios — con anuncios</li>
+        <li class="no">Asesoría veterinaria online</li>
+        <li class="no">Descuentos exclusivos</li>
+        <li class="no">Foro VIP y canales Plus</li>
+      </ul>
+      <a href="#" class="btn-plan" onclick="showToast('Creando tu cuenta gratuita...')">Comenzar gratis</a>
+    </div>
+    <div class="plan-card featured">
+      <div class="plan-icon">🌟</div>
+      <div class="plan-name">AURACAN Plus</div>
+      <div class="plan-desc">La experiencia completa</div>
+      <div class="plan-price"><sup>$</sup>19.900<sub>/mes</sub></div>
+      <ul class="plan-features">
+        <li>Todo lo del plan Gratis</li>
+        <li>Sin anuncios</li>
+        <li>Foro VIP y canales exclusivos</li>
+        <li>1 consulta veterinaria online/mes</li>
+        <li>15% descuento en tienda</li>
+        <li>Perfil verificado ✔️</li>
+        <li>Alertas de mascotas perdidas</li>
+      </ul>
+      <a href="#" class="btn-plan gold" onclick="openModal('plus')">Obtener Plus ✦</a>
+    </div>
+    <div class="plan-card">
+      <div class="plan-icon">👑</div>
+      <div class="plan-name">AURACAN Premium</div>
+      <div class="plan-desc">Para los más apasionados</div>
+      <div class="plan-price"><sup>$</sup>39.900<sub>/mes</sub></div>
+      <ul class="plan-features">
+        <li>Todo lo del plan Plus</li>
+        <li>3 consultas veterinarias/mes</li>
+        <li>25% descuento en tienda</li>
+        <li>Envío gratis en toda la tienda</li>
+        <li>Acceso anticipado a productos</li>
+        <li>Soporte prioritario 24/7</li>
+        <li>Badge Premium exclusivo 👑</li>
+      </ul>
+      <a href="#" class="btn-plan" onclick="openModal('plus')">Obtener Premium</a>
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section id="newsletter">
+  <div class="newsletter-box">
+    <div class="section-tag tag-gold" style="margin:0 auto 12px">📧 Newsletter</div>
+    <h2 class="section-title" style="text-align:center">¿Te quedas con nosotros?</h2>
+    <p class="section-sub" style="margin:0 auto;text-align:center">Recibe tips de cuidado, ofertas exclusivas y novedades de AURACAN.</p>
+    <div class="newsletter-input-row">
+      <input class="newsletter-input" type="email" id="emailInput" placeholder="tu@correo.com" />
+      <button class="btn-primary" onclick="subscribeNewsletter()">¡Suscribirme! 🐾</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">AURA<span>CAN</span> 🐾</div>
+      <p>La plataforma más completa para dueños de mascotas. Tienda, comunidad, adopciones y más. Porque ellos son familia.</p>
+      <div class="social-icons" style="margin-top:18px">
+        <a class="social-btn" href="#" onclick="showToast('📘 Facebook próximamente')">f</a>
+        <a class="social-btn" href="#" onclick="showToast('📸 Instagram próximamente')">📷</a>
+        <a class="social-btn" href="#" onclick="showToast('🐦 Twitter próximamente')">𝕏</a>
+        <a class="social-btn" href="#" onclick="showToast('▶️ YouTube próximamente')">▶</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Tienda</h4>
+      <ul>
+        <li><a href="#tienda">Alimento</a></li>
+        <li><a href="#tienda">Juguetes</a></li>
+        <li><a href="#tienda">Accesorios</a></li>
+        <li><a href="#tienda">Salud</a></li>
+        <li><a href="#tienda">Ropa</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Comunidad</h4>
+      <ul>
+        <li><a href="#foro">Foro general</a></li>
+        <li><a href="#busqueda">Adopciones</a></li>
+        <li><a href="#busqueda">Mascotas perdidas</a></li>
+        <li><a href="#membresia">Membresía Plus</a></li>
+        <li><a href="#" onclick="showToast('Blog próximamente')">Blog</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Ayuda</h4>
+      <ul>
+        <li><a href="#" onclick="showToast('Centro de ayuda próximamente')">Centro de ayuda</a></li>
+        <li><a href="#" onclick="showToast('Términos próximamente')">Términos de uso</a></li>
+        <li><a href="#" onclick="showToast('Privacidad próximamente')">Privacidad</a></li>
+        <li><a href="#" onclick="openModal('login')">Iniciar sesión</a></li>
+        <li><a href="#" onclick="openModal('register')">Registrarse</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 AURACAN · Hecho con 🐾 y mucho amor</span>
+    <span>Todos los derechos reservados</span>
+  </div>
+</footer>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-login">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('login')">×</button>
+    <h3>🐾 Iniciar sesión</h3>
+    <p>Bienvenido de vuelta a AURACAN</p>
+    <div class="form-group"><label>Correo electrónico</label><input type="email" placeholder="tu@correo.com" /></div>
+    <div class="form-group"><label>Contraseña</label><input type="password" placeholder="••••••••" /></div>
+    <button class="btn-modal-submit" onclick="showToast('🐾 ¡Sesión iniciada exitosamente!');closeModal('login')">Iniciar sesión</button>
+    <p style="text-align:center;margin-top:14px;font-size:0.85rem;color:var(--mid)">¿No tienes cuenta? <a href="#" onclick="closeModal('login');openModal('register')" style="color:var(--gold);font-weight:700">Regístrate</a></p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-register">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('register')">×</button>
+    <h3>🐾 Crear cuenta</h3>
+    <p>Únete a la comunidad AURACAN</p>
+    <div class="form-group"><label>Nombre completo</label><input type="text" placeholder="Tu nombre" /></div>
+    <div class="form-group"><label>Correo electrónico</label><input type="email" placeholder="tu@correo.com" /></div>
+    <div class="form-group"><label>Contraseña</label><input type="password" placeholder="Mínimo 8 caracteres" /></div>
+    <button class="btn-modal-submit" onclick="showToast('🎉 ¡Cuenta creada! Bienvenido a AURACAN');closeModal('register')">Crear cuenta gratuita</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-plus">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('plus')">×</button>
+    <h3>✦ Activar Membresía Plus</h3>
+    <p>Disfruta todos los beneficios de AURACAN Plus</p>
+    <div class="form-group"><label>Nombre en la tarjeta</label><input type="text" placeholder="Nombre completo" /></div>
+    <div class="form-group"><label>Número de tarjeta</label><input type="text" placeholder="•••• •••• •••• ••••" /></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group"><label>Vencimiento</label><input type="text" placeholder="MM/AA" /></div>
+      <div class="form-group"><label>CVV</label><input type="text" placeholder="•••" /></div>
+    </div>
+    <button class="btn-modal-submit" onclick="showToast('⭐ ¡Membresía Plus activada!');closeModal('plus')">Activar Plus — $19.900/mes</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-reporte">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('reporte')">×</button>
+    <h3>🐾 Reportar mascota</h3>
+    <p>Ayúdanos a reunir familias con sus mascotas</p>
+    <div class="form-group"><label>Tipo de reporte</label>
+      <select><option>En adopción</option><option>Mascota perdida</option><option>Mascota encontrada</option></select>
+    </div>
+    <div class="form-group"><label>Nombre de la mascota</label><input type="text" placeholder="Ej: Luna" /></div>
+    <div class="form-group"><label>Especie y raza</label><input type="text" placeholder="Ej: Labrador 2 años" /></div>
+    <div class="form-group"><label>Ciudad / Zona</label><input type="text" placeholder="Ej: Bogotá, Chapinero" /></div>
+    <div class="form-group"><label>Descripción</label><textarea rows="3" placeholder="Descripción física, señas particulares..."></textarea></div>
+    <button class="btn-modal-submit" onclick="showToast('✅ ¡Reporte enviado! La comunidad te ayudará.');closeModal('reporte')">Publicar reporte</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-post">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('post')">×</button>
+    <h3>✏️ Nueva discusión</h3>
+    <p>Comparte con la comunidad AURACAN</p>
+    <div class="form-group"><label>Categoría</label>
+      <select><option>🐶 Perros</option><option>🐱 Gatos</option><option>🐰 Roedores</option><option>❓ Ayuda y consejos</option><option>📸 Galería de mascotas</option></select>
+    </div>
+    <div class="form-group"><label>Título</label><input type="text" placeholder="¿Sobre qué quieres hablar?" /></div>
+    <div class="form-group"><label>Contenido</label><textarea rows="4" placeholder="Escribe tu mensaje aquí..."></textarea></div>
+    <button class="btn-modal-submit" onclick="showToast('💬 ¡Post publicado exitosamente!');closeModal('post')">Publicar en el foro</button>
+  </div>
+</div>
+
+<script>
+  /* ── PAW TRAIL ── */
+  const canvas = document.getElementById('paw-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+  const paws = [];
+  let lastX = 0, lastY = 0, flip = false;
+  document.addEventListener('mousemove', e => {
+    const dx = e.clientX - lastX, dy = e.clientY - lastY;
+    if (Math.sqrt(dx*dx+dy*dy) > 48) {
+      paws.push({ x: e.clientX, y: e.clientY, alpha: 1, flip });
+      flip = !flip; lastX = e.clientX; lastY = e.clientY;
+    }
+  });
+  function drawPaws() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for (let i = paws.length-1; i>=0; i--) {
+      const p = paws[i];
+      ctx.save(); ctx.globalAlpha = p.alpha * 0.35;
+      ctx.font = '22px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.translate(p.x, p.y); if(p.flip) ctx.scale(-1,1);
+      ctx.fillText('🐾', 0, 0);
+      ctx.restore();
+      p.alpha -= 0.018;
+      if (p.alpha <= 0) paws.splice(i,1);
+    }
+    requestAnimationFrame(drawPaws);
+  }
+  drawPaws();
+
+  /* ── NAVBAR ── */
+  function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
+  function closeMenu() { document.getElementById('mobileMenu').classList.remove('open'); }
+
+  /* ── SCROLL TOP ── */
+  window.addEventListener('scroll', () => {
+    document.getElementById('scroll-top').classList.toggle('visible', window.scrollY > 400);
+  });
+
+  /* ── TOAST ── */
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  /* ── MODALS ── */
+  function openModal(id) { document.getElementById('modal-'+id).classList.add('open'); }
+  function closeModal(id) { document.getElementById('modal-'+id).classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); });
+  });
+
+  /* ── TIENDA FILTER ── */
+  function filterTab(el, cat) {
+    document.querySelectorAll('.category-tabs .tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('#productsGrid .product-card').forEach(c => {
+      c.style.display = (cat==='todos' || c.dataset.cat===cat) ? 'block' : 'none';
+    });
+  }
+
+  /* ── CARRITO ── */
+  function addCart(name) { showToast('🛒 "' + name + '" añadido al carrito'); }
+
+  /* ── BÚSQUEDA ── */
+  function searchPets() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) { showToast('🔍 Escribe algo para buscar'); return; }
+    showToast('🔍 Buscando "' + q + '"...');
+  }
+  function toggleChip(el, cat) {
+    el.classList.toggle('active');
+  }
+
+  /* ── FORO TABS ── */
+  function tabActive(el) {
+    el.closest('.category-tabs').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  /* ── NEWSLETTER ── */
+  function subscribeNewsletter() {
+    const e = document.getElementById('emailInput').value.trim();
+    if (!e || !e.includes('@')) { showToast('⚠️ Ingresa un correo válido'); return; }
+    showToast('📧 ¡Suscripción confirmada! Gracias ' + e.split('@')[0]);
+    document.getElementById('emailInput').value = '';
+  }
+</script>
+
+<!-- PWA INSTALL BANNER -->
+<div id="install-banner">
+  <div class="banner-icon">🐾</div>
+  <div class="banner-text">
+    <strong>Instalar AURACAN</strong>
+    <span>Añade la app a tu pantalla de inicio</span>
+  </div>
+  <button class="btn-install" id="btn-install-accept">Instalar</button>
+  <button class="btn-dismiss" onclick="dismissBanner()">✕</button>
+</div>
+
+<div id="offline-badge">📵 Sin conexión — modo offline</div>
+
+<script>
+  /* ── SERVICE WORKER ── */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log('AURACAN SW registrado ✓'))
+        .catch(e => console.log('SW error:', e));
+    });
+  }
+
+  /* ── INSTALL PROMPT ── */
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    setTimeout(() => document.getElementById('install-banner').classList.add('show'), 2500);
+  });
+  document.getElementById('btn-install-accept').addEventListener('click', async () => {
+    document.getElementById('install-banner').classList.remove('show');
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') showToast('🎉 ¡AURACAN instalada correctamente!');
+      deferredPrompt = null;
+    }
+  });
+  function dismissBanner() {
+    document.getElementById('install-banner').classList.remove('show');
+    localStorage.setItem('auracan-banner-dismissed', '1');
+  }
+  if (localStorage.getItem('auracan-banner-dismissed')) {
+    document.getElementById('install-banner').style.display = 'none';
+  }
+
+  /* ── OFFLINE DETECTION ── */
+  function updateOnlineStatus() {
+    document.getElementById('offline-badge').classList.toggle('show', !navigator.onLine);
+    if (!navigator.onLine) showToast('📵 Sin conexión — mostrando datos guardados');
+  }
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+
+  /* ── APP INSTALLED EVENT ── */
+  window.addEventListener('appinstalled', () => {
+    showToast('✅ ¡AURACAN instalada en tu dispositivo!');
+  });
+</script>
+
+</body>
+</html>
